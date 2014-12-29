@@ -1,60 +1,77 @@
-require '/usr/local/Dobutsupedia/app/models/concerns/board'
+require 'board'
 
-LOG_INTERVAL=200
-MAX_CACHE=3000
+LOG_INTERVAL=100
+MAX_CACHE=10000000
+
+t = Time.now
 
 hash = Hash.new 
-sum = 0
-n = 0
 dup_cache = 0
 dup_db = 0
 mates = 0
+sum = Position.count
 
-board0 = Board.new
-board0.initial
-board0.normalize
-#board0.test_position
+if sum == 0
+  board = Board.new
+  board.initial
+  board.normalize
+  #board0.test_position
 
-hash[board0.to_bit] = true
-Position.register(board0.to_bit, n)
-sum += 1
-bits = [board0.to_bit]
+  bit = board.to_bit
+#  hash[bit] = true
+  Position.register(bit, 0)
+  sum += 1
+end
 
-while (bits.length > 0)
-  puts n.to_s + " " + bits.length.to_s + " " + sum.to_s
-  n += 1
-  bits_new = []
-  i = 0
-  bits.each do |bit|
-    i += 1
-    board = Board.new
-    board.set_from_bit(bit)
-    next_bits = board.next_boards
-    if next_bits.length > 0
-      next_bits.each do |next_bit|
-        if hash[next_bit] == true
-          dup_cache += 1
-        else
-          hash[next_bit] = true
-          hash.shift if hash.length > MAX_CACHE
-          if (Position.register(next_bit, n))
-            bits_new.push(next_bit)
-            sum += 1
-            if (sum % LOG_INTERVAL == 0)
-              puts sprintf("-> %d %d/%d duplicates:%d(cache)%d(db) %dmates", sum, i, bits.length, dup_cache, dup_db, mates)
-              dup_cache = 0
-              dup_db = 0
-              mates = 0
-            end
+i = 1
+while (i <= sum)
+  positions = Position.where("id >= ? AND id <= ?", i, i+99999)
+
+  Position.transaction do
+    positions.each do |position|
+
+      if position.flag
+        puts sprintf("Passed id=%d as it is already evaluated.", i) if i % 1000 == 0
+#        hash[position.bit_id] = true
+        i += 1
+        next
+      end
+
+      mate = false
+      board = Board.new
+      board.set_from_bit(position.bit_id)
+      next_bits = board.next_bits_normalized
+      if next_bits.length > 0
+        next_bits.each do |next_bit|
+          if hash[next_bit] == true
+            dup_cache += 1
           else
-            dup_db += 1
+#            hash[next_bit] = true
+#            hash.shift if hash.length > MAX_CACHE
+            if (Position.register(next_bit, position.num_front + 1))
+              sum += 1
+            else
+              dup_db += 1
+            end
           end
         end
+      else
+        mate = true
+        mates += 1 
+      end #if
+
+      if mate
+        ActiveRecord::Base.connection.execute("update positions set flag=1, num_end=0 where id=#{i}")
+      else
+        ActiveRecord::Base.connection.execute("update positions set flag=1 where id=#{i}")
       end
-    else
-      mates += 1 
-    # puts "MATE!"
-    end
-  end
-  bits = bits_new.clone
-end
+      i += 1
+      if (i % LOG_INTERVAL == 0)
+        puts sprintf("#%d, %d/%d, dups:%d/%d, mat:%d, %ds", position.num_front, i, sum, dup_cache, dup_db, mates, Time.now-t)
+        dup_cache = 0
+        dup_db = 0
+        mates = 0
+      end
+    end #positions.each
+  end #Position.transaction
+end #while

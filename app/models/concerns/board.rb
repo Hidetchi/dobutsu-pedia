@@ -195,8 +195,8 @@ class Board
     false
   end
 
-  def next_boards
-    boards = []
+  def next_bits_normalized
+    bits = []
     for i in 0..3 do
       for j in 0..2 do
         next unless own_piece?(i, j, @teban)
@@ -211,7 +211,13 @@ class Board
           next_board = deep_copy
           next_board.move(i, j, x, y)
           next_board.normalize
-          boards.push(next_board.to_bit) unless next_board.winning?
+          bits.push(next_board.to_bit) unless next_board.winning?
+          if ((@array[i][j] == 7 && i == 1) || (@array[i][j] == 8 && i == 2))
+            next_board = deep_copy
+            next_board.move(i, j, x, y, true)
+            next_board.normalize
+            bits.push(next_board.to_bit) unless next_board.winning?
+          end
         end
       end
     end
@@ -224,15 +230,15 @@ class Board
             next_board = deep_copy
             next_board.drop(i, x, y)
             next_board.normalize
-            boards.push(next_board.to_bit) unless next_board.winning?
+            bits.push(next_board.to_bit) unless next_board.winning?
           end
         end
       end
     end
-    boards
+    bits
   end
 
-  def move(i, j, x, y)
+  def move(i, j, x, y, promote = false)
     if (@teban)
       if (@array[x][y] == 4)
         @my_hands[0] += 1
@@ -242,7 +248,7 @@ class Board
         @my_hands[2] += 1
       end
     end
-    @array[x][y] = @array[i][j]
+    @array[x][y] = @array[i][j] + (promote ? 2 : 0)
     @array[i][j] = 0
     @teban = !@teban
   end

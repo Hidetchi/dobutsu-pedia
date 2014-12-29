@@ -14,12 +14,12 @@
 ActiveRecord::Schema.define(version: 20141227063922) do
 
   create_table "positions", force: true do |t|
-    t.integer "bit_id"
+    t.integer "bit_id",    limit: 8
     t.integer "num_front"
     t.integer "num_end"
-    t.boolean "flag",      default: false
+    t.boolean "flag",                default: false
   end
 
-  add_index "positions", ["bit_id"], name: "index_positions_on_bit_id", unique: true
+  add_index "positions", ["bit_id"], name: "index_positions_on_bit_id", unique: true, using: :btree
 
 end
