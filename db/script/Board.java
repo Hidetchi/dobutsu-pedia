@@ -233,14 +233,14 @@ class Board {
             if (y>2) continue;
             if (_is_own_piece(x, y, _teban)) continue;
             if (_can_move(_ban[i][j], x-i, y-j)) {
-              next_board = deepCopy();
-              next_board.move(i, j, x, y, false);
-              if (!next_board.winning()) bits.add(next_board.toBit(true));
               if ((_ban[i][j] == 7 && i == 1) || (_ban[i][j] == 8 && i == 2)) {
                 next_board = deepCopy();
                 next_board.move(i, j, x, y, true);
                 if (!next_board.winning()) bits.add(next_board.toBit(true));
               }
+              next_board = deepCopy();
+              next_board.move(i, j, x, y, false);
+              if (!next_board.winning()) bits.add(next_board.toBit(true));
             }
           }
         }

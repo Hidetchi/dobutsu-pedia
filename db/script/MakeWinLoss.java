@@ -60,11 +60,11 @@ class MakeWinLoss{
                 if (result != 1000 && result % 2 == 0) {
                   results[i] = (short)(result <= 0 ? -n : n);
                   concluded = true;
-                  sum += 1;
-                  break;
+                  if (result <= 0) break;
                 }
               }
-              if (!concluded) remain += 1;
+              if (concluded) sum += 1;
+              else remain += 1;
             } else {
               boolean allLost = true;
               boolean allLostByMate = true;
@@ -75,7 +75,7 @@ class MakeWinLoss{
                   remain += 1;
                   break;
                 } else {
-                  if (result < 0) allLostByMate = false;
+                  if (result > 0) allLostByMate = false;
                 }
               }
               if (allLost) {
@@ -95,7 +95,7 @@ class MakeWinLoss{
         }
       }
       System.out.printf("\n%d positions concluded. %d positions remaining.\n", sum, remain);
-      System.out.printf("Initial position's result: %d\n", results[Arrays.binarySearch(bits, 4670862863189184L)]);
+
     } while(sum > 0);
 
     try {

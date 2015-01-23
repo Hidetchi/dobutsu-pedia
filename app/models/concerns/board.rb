@@ -1,56 +1,77 @@
-class Board
+﻿class Board
   NAMES = [" * ", "+LI", "-LI", "+KI", "-KI", "+ZO", "-ZO", "+HI", "-HI", "+NI", "-NI"]
   REVERSE = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9]
+  NAMES_JA = ["ライオン", "キリン", "ゾウ", "ひよこ", "ニワトリ"]
   #  1    2    3    4    5    6    7    8    9   10
   # +LI, -LI, +KI, -KI, +ZO, -ZO, +HI, -HI, +NI, -NI
-  def initialize
-    @my_hands = [0, 0, 0] #KI,ZO,HI
+
+  attr_reader :id, :num_end, :teban
+
+  def initialize(bit=4670862863189184, teban=true, loadDB=true)
     @array = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]] 
-    @teban = nil # black => true, white => false
+    @my_hands = [0, 0, 0] #KI,ZO,HI
+    @teban = teban
+
+    for i in 0..2 do
+      @my_hands[2 - i] = bit & 3
+      bit = bit >> 2
+    end
+    for i in 0..3 do
+      for j in 0..2 do
+        @array[3 - i][2 - j] = bit & 15
+        bit = bit >> 4
+      end
+    end
+
+    loadPosition if loadDB
   end
 
-  def initial
-    @array = [[4, 2, 6], [0, 8, 0], [0, 7, 0], [5, 1, 3]]
-    @teban = true
-  end
-  
-  def test_position
-    @array = [[2, 0, 0], [0, 0, 0], [0, 1, 0], [3, 3, 0]]
-    @my_hands = [0, 1, 1]
-    @teban = true
-  end
-  
-  def deep_copy
-    return Marshal.load(Marshal.dump(self))
+  def loadPosition(position = nil)
+    position = Position.find_by(bit_id: normalized_bit) if !position
+    @id = position.id
+    @num_end = position.num_end
+    @best_id = position.best_id
   end
 
-  def normalize
-    if (@teban == false)
-      arr = Marshal.load(Marshal.dump(@array))
+  def normalized_bit
+    if @teban
+      array = @array
+      hands = @my_hands
+    else
+      array = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]] 
       for i in 0..3 do
         for j in 0..2 do
-          @array[i][j] = REVERSE[arr[3 - i][2 - j]]
+          array[i][j] = REVERSE[@array[3 - i][2 - j]]
         end
       end
-      @my_hands = his_hands
-      @teban = true
+      hands = his_hands
     end
     mirror = false
     for i in 0..3 do
-      if (@array[i][0] == @array[i][2])
+      if (array[i][0] == array[i][2])
         next
       else
-        mirror = true if (@array[i][0] > @array[i][2])
+        mirror = true if (array[i][0] > array[i][2])
         break
       end
     end
-    if mirror
-      for i in 0..3 do
-        tmp = @array[i][0]
-        @array[i][0] = @array[i][2]
-        @array[i][2] = tmp
+
+    bit = 0
+    for i in 0..3 do
+      for j in 0..2 do
+        bit = bit << 4
+        bit += array[i][mirror ? 2 - j : j]
       end
     end
+    for i in 0..2 do
+      bit = bit << 2
+      bit += hands[i]
+    end
+    bit
+  end
+
+  def deep_copy
+    return Marshal.load(Marshal.dump(self))
   end
 
   def to_s
@@ -78,35 +99,87 @@ class Board
     str
   end
 
-  def to_bit
-    bit = 0
+  def to_str
+    str = ""
     for i in 0..3 do
       for j in 0..2 do
-        bit = bit << 4
-        bit += @array[i][j]
+        str += @array[i][j].to_s(16)
       end
     end
     for i in 0..2 do
-      bit = bit << 2
-      bit += @my_hands[i]
+      str += @my_hands[i].to_s(16)
     end
-    bit
+    str += @teban ? "0" : "1"
+    str
   end
 
-  def set_from_bit(bit)
+  def toHTML
+    html = "<center>"
+    hands = his_hands
     for i in 0..2 do
-      @my_hands[2 - i] = bit & 3
-      bit = bit >> 2
+      hands[i].times {html += imageTag(4 + 2 * i)}
     end
+    html += "<table class='board'>"
     for i in 0..3 do
+      html += "<tr>"
       for j in 0..2 do
-        @array[3 - i][2 - j] = bit & 15
-        bit = bit >> 4
+        html += "<td>" + imageTag(@array[i][j])
       end
     end
-    @teban = true
+    html += "</table>"
+    for i in 0..2 do
+      @my_hands[i].times {html += imageTag(3 + 2 * i)}
+    end
+    html += "</center>"
   end
   
+  def to_conclusion
+    player = @teban ? "先手" : "後手"
+    if (@num_end == nil)
+      return "引き分け"
+    elsif (@num_end % 2 == 0)
+      return player + "負け"
+    else
+      return player + "勝ち"
+    end
+  end
+
+  def to_description
+    @num_end
+    if (@num_end == nil)
+      return ""
+    elsif (@num_end == 0)
+      return "●詰み"
+    elsif (@num_end % 2 == 0)
+      return "即詰み (あと" + (-@num_end).to_s + "手)" if (@num_end < 0)
+      return "あと" + @num_end.to_s + "手"
+    else
+      return "★詰み有り(" + (-@num_end).to_s + "手詰)" if (@num_end < 0)
+      return "最短で" + @num_end.to_s + "手"
+    end
+  end
+
+  def evaluation
+    if (@num_end == nil)
+      return 0
+    elsif (@num_end % 2 == 0)
+      return 1000 - 2 * @num_end.abs + (@num_end < 0 ? 1 : 0) + ((@num_end == 0 && check?) ? 1 : 0)
+    else
+      return -1000 + 2 * @num_end.abs + (@num_end > 0 ? 1 : 0)
+    end
+  end
+
+  def eval_color
+    eval = evaluation
+    if (eval > 0)
+      "win"
+    elsif (eval < 0)
+      "loss"
+    else
+      "draw"
+    end
+  end
+
   def his_hands
     hands = [2, 2, 2]
     for i in 0..3 do
@@ -195,8 +268,63 @@ class Board
     false
   end
 
-  def next_bits_normalized
-    bits = []
+  def check?
+    @teban = !@teban
+    is_check = winning?
+    @teban = !@teban
+    is_check
+  end
+
+  def next_boards
+    boards = []
+    for i in 0..3 do
+      for j in 0..2 do
+        next unless own_piece?(i, j, @teban)
+        moveable_grids(@array[i][j]).each do |move_vector|
+          x = i + move_vector[0]
+          next if x < 0
+          next if x > 3
+          y = j + move_vector[1]
+          next if y < 0
+          next if y > 2
+          next if own_piece?(x, y, @teban)
+          if ((@array[i][j] == 7 && i == 1) || (@array[i][j] == 8 && i == 2))
+            next_board = deep_copy
+            if (next_board.move(i, j, x, y, true))
+              next_board.loadPosition
+              boards.push(next_board)
+            end
+          end
+          next_board = deep_copy
+          if (next_board.move(i, j, x, y))
+            next_board.loadPosition
+            boards.push(next_board)
+          end
+        end
+      end
+    end
+    hands = @teban ? @my_hands : his_hands
+    for i in 0..2 do
+      next if hands[i] < 1
+      for x in 0..3 do
+        for y in 0..2 do
+          if (@array[x][y] == 0)
+            next_board = deep_copy
+            if (next_board.drop(i, x, y))
+              next_board.loadPosition
+              boards.push(next_board)
+            end
+          end
+        end
+      end
+    end
+    boards.sort_by{|board| -board.evaluation}
+  end
+
+  def best_candidate
+    return nil if (@num_end == nil || @num_end == 0)
+    position = Position.find(@best_id)
+    best_bit = position.bit_id
     for i in 0..3 do
       for j in 0..2 do
         next unless own_piece?(i, j, @teban)
@@ -209,14 +337,20 @@ class Board
           next if y > 2
           next if own_piece?(x, y, @teban)
           next_board = deep_copy
-          next_board.move(i, j, x, y)
-          next_board.normalize
-          bits.push(next_board.to_bit) unless next_board.winning?
+          if (next_board.move(i, j, x, y))
+            if (next_board.normalized_bit == best_bit)
+              next_board.loadPosition(position)
+              return next_board
+            end
+          end
           if ((@array[i][j] == 7 && i == 1) || (@array[i][j] == 8 && i == 2))
             next_board = deep_copy
-            next_board.move(i, j, x, y, true)
-            next_board.normalize
-            bits.push(next_board.to_bit) unless next_board.winning?
+            if (next_board.move(i, j, x, y, true))
+              if (next_board.normalized_bit == best_bit)
+                next_board.loadPosition(position)
+                return next_board
+              end
+            end
           end
         end
       end
@@ -228,14 +362,17 @@ class Board
         for y in 0..2 do
           if (@array[x][y] == 0)
             next_board = deep_copy
-            next_board.drop(i, x, y)
-            next_board.normalize
-            bits.push(next_board.to_bit) unless next_board.winning?
+            if (next_board.drop(i, x, y))
+              if (next_board.normalized_bit == best_bit)
+                next_board.loadPosition(position)
+                return next_board
+              end
+            end
           end
         end
       end
     end
-    bits
+    return nil
   end
 
   def move(i, j, x, y, promote = false)
@@ -251,6 +388,7 @@ class Board
     @array[x][y] = @array[i][j] + (promote ? 2 : 0)
     @array[i][j] = 0
     @teban = !@teban
+    !winning?
   end
 
   def drop(i, x, y)
@@ -261,6 +399,25 @@ class Board
       @array[x][y] = [4, 6, 8][i]
     end
     @teban = !@teban
+    !winning?
+  end
+
+  def to_move(board)
+    str = @teban ? "▲" : "△"
+    for i in 0..3 do
+      for j in 0..2 do
+        type = board.getPiece(i,j)
+        if (type != 0 && type != @array[i][j])
+          str += ["A", "B", "C"][j] + (i+1).to_s + NAMES_JA[(type-1)/2]
+          break
+        end
+      end
+    end
+    str
+  end
+
+  def getPiece(x,y)
+    @array[x][y]
   end
 
   def position_valid?
@@ -274,28 +431,10 @@ class Board
     return nil if (checkmated?(!@teban))
     true
   end
+
+  private
+  def imageTag(type)
+    type == 0 ? "" : "<img src='/assets/" + type.to_s + ".png'>"
+  end
   
-  def num_candidates(x1, y1, name)
-    num = 0
-    for x in 1..9 do
-      for y in 1..9 do
-        num += 1 if (@array[x][y] && @array[x][y].to_s == name && @array[x][y].movable_grids.include?([x1, y1]))
-      end
-    end
-    return num
-  end
-
-  def do_moves_str(csa)
-    new_board = deep_copy
-    ret = []
-    rs = csa.gsub %r{[\+\-]\d{4}\w{2}} do |s|
-           ret << s
-           ""
-         end
-    ret.each do |move|
-      new_board.handle_one_move(move)
-    end
-    return new_board
-  end
-
 end

@@ -1,14 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dobutsupedia</title>
-  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
-  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <title><%= SITE_NAME %><%= " / " + yield(:title) if content_for?(:title) %></title>
+  <%= stylesheet_link_tag    'application', media: 'all', "data-turbolinks-track" => true %>
+  <%= javascript_include_tag 'application', "data-turbolinks-track" => true %>
   <%= csrf_meta_tags %>
 </head>
-<body>
+<body id="root">
+<div id="wrapper">
 
+<div id="side_column">
+<ul class="sidemenu">
+<li><%= link_to 'トップ', '/' %>
+<li class="new_section"><%= link_to 'サイト紹介', '' %>
+</ul>
+<% if (notice || alert) %>
+<div id="alert_box">
+<p class="notice"><%= notice %></p>
+<p class="alert"><%= alert %></p>
+</div>
+<% end %>
+</div>
+
+<div id="main">
+
+<div id="header">
+</div>
+
+<div id="contents">
 <%= yield %>
+</div>
 
+</div>
+
+</div>
+<div id="footer">
+  Hidetchi, All rights reserved
+</div>
 </body>
 </html>
