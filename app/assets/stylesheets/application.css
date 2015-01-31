@@ -33,7 +33,7 @@ div#wrapper {
 }
 
 div#side_column {
-	background-color: #e6f2fb;
+	background-color: #e3faf3;
 	border-right: 1px solid #ccd;
 	padding: 10px 0;
 	width: 140px;
@@ -67,18 +67,6 @@ div#alert_box {
 	margin-top: 20px;
 	margin-left: 2px;
 	width: 130px;
-  animation: flash 0.5s ease-in 1s 6 alternate;
-  -webkit-animation: flash 0.5s easy-in 1s 6 alternate;
-}
-@keyframes flash {
-  0% { background-color: #ffd; }
-  50% { background-color: #ffd; }
-  100% { background-color: #ff6; }
-}
-@-webkit-keyframes flash {
-  0% { background-color: #ffd; }
-  50% { background-color: #ffd; }
-  100% { background-color: #ff6; }
 }
 
 div#user_panel {
@@ -155,13 +143,6 @@ border-bottom: 1px solid #888;
 border-left: 10px solid #888;
 font-size: 15px;
 }
-h3.choice {
-margin-right:8px;
-background-color: #383;
-color: white;
-border-bottom: 1px solid #040;
-border-left: 10px solid #040;
-}
 
 h4 {
 margin: 0 0 12px 22px;
@@ -210,22 +191,30 @@ table.standard td, th {
     overflow: hidden;
 }
 
+table.board {
+  
+}
 table.board td {
   border: 1px solid #aaa;
   width: 50px;
-  height: 45px;
+  height: 50px;
   text-align: center;
   vertical-align: bottom;
   padding: 0px;
 }
 
-tr.win {
+div.turn {
+  border: 1px solid black;
+  text-align: center;
+  height: 40px;
+}
+.win {
   background-color: #dfd;
 }
-tr.loss {
+.loss {
   background-color: #fdd;
 }
-tr.draw {
+.draw {
   background-color: #ffc;
 }
 
@@ -289,59 +278,7 @@ ul.my_menu a {
 	border: 0;
 	background-color: transparent;
 	vertical-align: top;
-	padding: 15px 10px;
-}
-
-table.board_wrapper {
-	border: 0;
-	font-family: "游明朝","Yu Mincho","ヒラギノ明朝 Pro","Hiragino Mincho Pro","Takao明朝","TakaoMincho","ＭＳ 明朝","serif";
-	line-height: 1.1;
-}
-
-table.fontM {
-	font-size: 18px;
-}
-table.fontS {
-	font-size: 10px;
-}	
-
-table.board_M td {
-    width: 20px;
-    height: 22px;
-    border: 1px solid black;
-    padding: 0;
-	font-size: 18px;
-	line-height: 1.1;
-}
-
-table.board_S td {
-    width: 10px;
-    height: 11px;
-    border: 1px solid black;
-    padding: 0;
-	font-size: 10px;
-	line-height: 1.1;
-}
-
-td.gote {
-	-moz-transform:matrix(-1, 0, 0, -1, 0, 0);
-	-webkit-transform:matrix(-1, 0, 0, -1, 0, 0);
-	-o-transform:matrix(-1, 0, 0, -1, 0, 0);
-	-ms-transform:matrix(-1, 0, 0, -1, 0, 0);
-	transform:matrix(-1, 0, 0, -1, 0, 0);
-	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
-}
-
-td.board_frame {
-	border: 1px solid black;
-	padding: 5px;
-}
-
-td.komadai {
-	border: 0;
-	text-align: left;
-	vertical-align: bottom;
-	padding-left: 9px;
+	padding: 10px 0;
 }
 
 a.external {

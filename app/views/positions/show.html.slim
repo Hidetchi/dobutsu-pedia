@@ -1,31 +1,38 @@
+javascript:
+  function load_best() {
+    $('#best_moves').append('<br>#{image_tag "loading-bar.gif"}');
+  }
 table.invisible
   tr
-    td.invisible style="vertical-align:top;"
-      = @board.teban ? "先手番" : "後手番"
-      = @board.toHTML.html_safe
-      = @board.to_conclusion
-      br
-      = @board.to_description
     td.invisible
+      - if !@board.teban
+        div class="turn #{@board.eval_color}"
+          |後手番
+          br
+          = @board.to_conclusion + "　" + @board.to_description
+      - else
+        div.turn style="border:0;"
+      = @board.toHTML.html_safe
+      - if @board.teban
+        div class="turn #{@board.eval_color}"
+          |先手番
+          br
+          = @board.to_conclusion + " " + @board.to_description
+      - else
+        div.turn style="border:0;"
+    td.invisible style="padding-left:45px;"
       h2 候補手一覧
       table.standard
         - @board.next_boards.each do |board|
-          tr class="#{board.eval_color}"
+          tr class="#{board.eval_color(@board.teban)}"
 
             td
               = link_to @board.to_move(board), '/positions/' + board.to_str
             td
-              = board.to_conclusion
+              = board.to_conclusion(@board.teban)
             td
               = board.to_description
-
-h2 最善手順
-table.standard
-  - catch :loop do
-    - for j in 0..50 do
-      tr
-        - for i in 0..5 do
-          - throw :loop if (6*j+i) > @best_boards.length - 2
-          td
-            = 6*j+i+1
-            = link_to @best_boards[6*j+i].to_move(@best_boards[6*j+i+1]), '/positions/' + @best_boards[6*j+i+1].to_str
+    td.invisible style="padding-left:45px;"
+      h2 最善手順
+      div#best_moves
+        = button_to '最善手順表示', {:controller => 'positions', :action => 'best', :str => @board.to_str}, :onclick => "load_best();", :remote => true

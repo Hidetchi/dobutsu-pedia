@@ -1,0 +1,4 @@
+ol
+  - for i in 0..(boards.length-2)
+    li 
+      = link_to boards[i].to_move(boards[i+1]), '/positions/' + boards[i+1].to_str

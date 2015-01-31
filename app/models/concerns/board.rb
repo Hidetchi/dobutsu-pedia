@@ -114,33 +114,33 @@
   end
 
   def toHTML
-    html = "<center>"
+    html = "<center><div style='height:50px;'>"
     hands = his_hands
     for i in 0..2 do
       hands[i].times {html += imageTag(4 + 2 * i)}
     end
-    html += "<table class='board'>"
+    html += "</div><table class='board'>"
     for i in 0..3 do
       html += "<tr>"
       for j in 0..2 do
         html += "<td>" + imageTag(@array[i][j])
       end
     end
-    html += "</table>"
+    html += "</table><div style='height:50px;'>"
     for i in 0..2 do
       @my_hands[i].times {html += imageTag(3 + 2 * i)}
     end
-    html += "</center>"
+    html += "</div></center>"
   end
   
-  def to_conclusion
-    player = @teban ? "先手" : "後手"
+  def to_conclusion(teban = @teban)
+    player = teban ? "先手" : "後手"
     if (@num_end == nil)
       return "引き分け"
     elsif (@num_end % 2 == 0)
-      return player + "負け"
+      return player + (teban == @teban ? "負け" : "勝ち")
     else
-      return player + "勝ち"
+      return player + (teban == @teban ? "勝ち" : "負け")
     end
   end
 
@@ -154,23 +154,24 @@
       return "即詰み (あと" + (-@num_end).to_s + "手)" if (@num_end < 0)
       return "あと" + @num_end.to_s + "手"
     else
-      return "★詰み有り(" + (-@num_end).to_s + "手詰)" if (@num_end < 0)
-      return "最短で" + @num_end.to_s + "手"
+      return "★" + (-@num_end).to_s + "手詰" if (@num_end < 0)
+      return "あと" + @num_end.to_s + "手"
     end
   end
 
-  def evaluation
+  def evaluation(teban = @teban)
     if (@num_end == nil)
-      return 0
+      eval = 0
     elsif (@num_end % 2 == 0)
-      return 1000 - 2 * @num_end.abs + (@num_end < 0 ? 1 : 0) + ((@num_end == 0 && check?) ? 1 : 0)
+      eval = 1000 - 2 * @num_end.abs + (@num_end < 0 ? 1 : 0) + ((@num_end == 0 && check?) ? 1 : 0)
     else
-      return -1000 + 2 * @num_end.abs + (@num_end > 0 ? 1 : 0)
+      eval = -1000 + 2 * @num_end.abs + (@num_end > 0 ? 1 : 0)
     end
+    teban == @teban ? -eval : eval
   end
 
-  def eval_color
-    eval = evaluation
+  def eval_color(teban = @teban)
+    eval = evaluation(teban)
     if (eval > 0)
       "win"
     elsif (eval < 0)
@@ -291,13 +292,11 @@
           if ((@array[i][j] == 7 && i == 1) || (@array[i][j] == 8 && i == 2))
             next_board = deep_copy
             if (next_board.move(i, j, x, y, true))
-              next_board.loadPosition
               boards.push(next_board)
             end
           end
           next_board = deep_copy
           if (next_board.move(i, j, x, y))
-            next_board.loadPosition
             boards.push(next_board)
           end
         end
@@ -311,14 +310,22 @@
           if (@array[x][y] == 0)
             next_board = deep_copy
             if (next_board.drop(i, x, y))
-              next_board.loadPosition
               boards.push(next_board)
             end
           end
         end
       end
     end
-    boards.sort_by{|board| -board.evaluation}
+    positions = Position.where(bit_id: boards.map(&:normalized_bit))
+    boards.each do |board|
+      positions.each do |position|
+        if position.bit_id == board.normalized_bit
+          board.loadPosition(position)
+          break
+        end
+      end
+    end
+    boards.sort_by{|board| board.evaluation}
   end
 
   def best_candidate

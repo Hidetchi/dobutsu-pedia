@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title><%= SITE_NAME %><%= " / " + yield(:title) if content_for?(:title) %></title>
+  <title><% yield(:title) if content_for?(:title) %></title>
   <%= stylesheet_link_tag    'application', media: 'all', "data-turbolinks-track" => true %>
   <%= javascript_include_tag 'application', "data-turbolinks-track" => true %>
   <%= csrf_meta_tags %>
@@ -10,9 +10,14 @@
 <div id="wrapper">
 
 <div id="side_column">
+<center>
+<%= link_to image_tag('logo-off.png', :id => 'logo'), '/' %>
+<br><span class="dark_red">beta</span>
+</center>
+
 <ul class="sidemenu">
 <li><%= link_to 'トップ', '/' %>
-<li class="new_section"><%= link_to 'サイト紹介', '' %>
+<li class="new_section"><%= link_to 'xxxxx', '' %>
 </ul>
 <% if (notice || alert) %>
 <div id="alert_box">

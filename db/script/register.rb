@@ -1,25 +1,33 @@
 TOTAL = 86848395;
 
-file1 = File.open('db/script/allBitsSorted.dat')
-file2 = File.open('db/script/winLoss.dat')
-file3 = File.open('db/script/bestMove.dat')
+file1 = File.open('allBitsSorted.dat')
+file2 = File.open('winLoss.dat')
+file3 = File.open('bestMove.dat')
 
 Rails.logger.level = 3
 
-ActiveRecord::Base.transaction do
+positions = []
+#ActiveRecord::Base.transaction do
+
   for i in 1..TOTAL do
     bit = file1.readline.chomp
     num = file2.readline.chomp
     best = file3.readline.chomp
     bit = bit.to_i
-    num = num == "*" ? "NULL" : num.to_i
-    best = best == "0" ? "NULL" : best.to_i
+    num = num == "*" ? nil : num.to_i
+    best = best == "0" ? nil : best.to_i
 
-    ActiveRecord::Base.connection.execute("insert into positions (id, bit_id, num_end, best_id) values (#{i}, #{bit}, #{num}, #{best})")
+#   ActiveRecord::Base.connection.execute("insert into positions (id, bit_id, num_end, best_id) values (#{i}, #{bit}, #{num}, #{best})")
+    positions << Position.new(id: i, bit_id: bit, num_end: num, best_id: best)
 
-    puts(i.to_s) if (i % 10000 == 0)
+    if (i % 100000 == 0 || i == TOTAL)
+      Position.import positions, :validate => false
+      positions = []
+      puts i
+    end
   end
-end
+
+#end
 
 file1.close
 file2.close
