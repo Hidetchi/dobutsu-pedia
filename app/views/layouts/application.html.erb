@@ -12,12 +12,16 @@
 <div id="side_column">
 <center>
 <%= link_to image_tag('logo-off.png', :id => 'logo'), '/' %>
+<br><span class="dark_red" style='font-weight:bold;font-size:16px'>どうぶつペディア</span>
 <br><span class="dark_red">beta</span>
 </center>
 
 <ul class="sidemenu">
-<li><%= link_to 'トップ', '/' %>
-<li class="new_section"><%= link_to 'xxxxx', '' %>
+<li><%= link_to 'サイト説明(準備中)', '#' %>
+<li class="new_section"><%= link_to '初期局面', '/' %>
+<li><%= link_to '局面検索(準備中)', '#' %>
+<li class="new_section"><%= link_to 'API(準備中)', '#' %>
+<li class="new_section"><%= link_to '局面ペディア(将棋)へ', 'http://kyokumen.jp' %>
 </ul>
 <% if (notice || alert) %>
 <div id="alert_box">
@@ -28,9 +32,6 @@
 </div>
 
 <div id="main">
-
-<div id="header">
-</div>
 
 <div id="contents">
 <%= yield %>

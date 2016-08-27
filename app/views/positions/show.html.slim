@@ -7,31 +7,30 @@ table.invisible
     td.invisible
       - if !@board.teban
         div class="turn #{@board.eval_color}"
-          |後手番
+          |△後手番
           br
-          = @board.to_conclusion + "　" + @board.to_description
+          b = @board.to_conclusion + " " + @board.to_description
       - else
         div.turn style="border:0;"
-      = @board.toHTML.html_safe
+      = render partial: 'concerns/board', locals: {board: @board}
       - if @board.teban
         div class="turn #{@board.eval_color}"
-          |先手番
+          |▲先手番
           br
-          = @board.to_conclusion + " " + @board.to_description
+          b = @board.to_conclusion + " " + @board.to_description
       - else
         div.turn style="border:0;"
     td.invisible style="padding-left:45px;"
       h2 候補手一覧
       table.standard
-        - @board.next_boards.each do |board|
-          tr class="#{board.eval_color(@board.teban)}"
-
+        - @board.next_boards.each do |next_board|
+          tr class="#{next_board.eval_color(@board.teban)}"
+            td style='padding-top:0; padding-bottom:0;'
+              = link_to @board.to_move(next_board), '/positions/' + next_board.to_str, class: 'move'
             td
-              = link_to @board.to_move(board), '/positions/' + board.to_str
+              = next_board.to_conclusion(@board.teban)
             td
-              = board.to_conclusion(@board.teban)
-            td
-              = board.to_description
+              = next_board.to_description
     td.invisible style="padding-left:45px;"
       h2 最善手順
       div#best_moves

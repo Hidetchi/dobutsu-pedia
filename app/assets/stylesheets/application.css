@@ -176,37 +176,63 @@ background: linear-gradient(to right, rgba(0,0,0,0.25),rgba(0,0,0,1),rgba(0,0,0,
 }
 
 table.standard {
-    border-top:1px solid #666666;
-    border-left:1px solid #666666;
+    border-top:1px solid #aaa;
+    border-left:1px solid #aaa;
     border-collapse: collapse;
     font-size: 13px;
     line-height: 1.4;
 }
 table.standard td, th {
-    border-right:1px solid #666666;
-    border-bottom:1px solid #666666;
+    border-right:1px solid #aaa;
+    border-bottom:1px solid #aaa;
     text-align: left;
     padding: 2px 4px;
     white-space: nowrap;
     overflow: hidden;
 }
 
-table.board {
-  
+div.board {
+  position: relative;
+  width: 324px;
+  height: 476px;
+  margin: 10px 0;
+  background-image: url("/assets/hidetchi/ban.png");
 }
-table.board td {
-  border: 1px solid #aaa;
-  width: 50px;
-  height: 50px;
+
+div.board table {
+  border-spacing: 0;
+  position: absolute;
+  left: 49px;
+  top: 89px;
+}
+
+div.board table td {
+  border: 0;
+  border-collapse: collapse;
+  padding: 0;
+}
+
+div.board table td div {
+  width: 75px;
+  height: 75px;
+  overflow: hidden;
+}
+
+div.hand {
+  position: absolute;
+  height: 75px;
+  width: 324px;
   text-align: center;
-  vertical-align: bottom;
-  padding: 0px;
+  left: 0;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 div.turn {
-  border: 1px solid black;
+  border: 1px solid #ccc;
   text-align: center;
   height: 40px;
+  padding: 5px;
 }
 .win {
   background-color: #dfd;
@@ -218,6 +244,15 @@ div.turn {
   background-color: #ffc;
 }
 
+img.piece {
+  vertical-align: bottom;
+  border:0;
+}
+
+a.move {
+  font-size: 16px;
+  text-decoration: none;
+}
 
 th {
   background-color: #e6f2fb;

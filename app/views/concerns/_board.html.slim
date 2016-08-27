@@ -1,0 +1,15 @@
+div.board
+  div.hand style='top: 0;'
+    - for i in 0..2 do
+      - board.his_hands[i].times do
+        = piece_img_tag(4 + 2 * i)
+  table
+    - for i in 0..3 do
+      tr
+        - for j in 0..2 do
+          td
+            div = piece_img_tag(board.array[i][j], 75)
+  div.hand style='top: 401px;'
+    - for i in 0..2 do
+      - board.my_hands[i].times do
+        = piece_img_tag(3 + 2 * i)

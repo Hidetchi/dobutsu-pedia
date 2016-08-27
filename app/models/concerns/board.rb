@@ -1,11 +1,13 @@
 ﻿class Board
+  include ApplicationHelper
+
   NAMES = [" * ", "+LI", "-LI", "+KI", "-KI", "+ZO", "-ZO", "+HI", "-HI", "+NI", "-NI"]
   REVERSE = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9]
   NAMES_JA = ["ライオン", "キリン", "ゾウ", "ひよこ", "ニワトリ"]
   #  1    2    3    4    5    6    7    8    9   10
   # +LI, -LI, +KI, -KI, +ZO, -ZO, +HI, -HI, +NI, -NI
 
-  attr_reader :id, :num_end, :teban
+  attr_reader :id, :num_end, :teban, :array, :my_hands
 
   def initialize(bit=4670862863189184, teban=true, loadDB=true)
     @array = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]] 
@@ -113,26 +115,6 @@
     str
   end
 
-  def toHTML
-    html = "<center><div style='height:50px;'>"
-    hands = his_hands
-    for i in 0..2 do
-      hands[i].times {html += imageTag(4 + 2 * i)}
-    end
-    html += "</div><table class='board'>"
-    for i in 0..3 do
-      html += "<tr>"
-      for j in 0..2 do
-        html += "<td>" + imageTag(@array[i][j])
-      end
-    end
-    html += "</table><div style='height:50px;'>"
-    for i in 0..2 do
-      @my_hands[i].times {html += imageTag(3 + 2 * i)}
-    end
-    html += "</div></center>"
-  end
-  
   def to_conclusion(teban = @teban)
     player = teban ? "先手" : "後手"
     if (@num_end == nil)
@@ -410,6 +392,48 @@
   end
 
   def to_move(board)
+    i0 = nil
+    j0 = nil
+    i1 = nil
+    j1 = nil
+    type0 = nil
+    type1 = nil
+    for i in 0..3 do
+      for j in 0..2 do
+        type = board.getPiece(i,j)
+        if (type != 0 && type != @array[i][j])
+          type1 = type
+          i1 = i
+          j1 = j
+          break if i0 && i1
+        elsif (type == 0 && @array[i][j] != 0)
+          type0 = @array[i][j]
+          i0 = i
+          j0 = j
+          break if type0 && type1
+        end
+      end
+    end
+    str = @teban ? "▲" : "△"
+    str += ["A", "B", "C"][j1] + (i1+1).to_s + " "
+    str += piece_img_tag(type0 || type1, 30)
+    if i0 == nil
+      action = "打"
+    elsif i1 == i0
+      action = j1 > j0 ? "→" : "←"
+    elsif j1 == j0
+      action = i1 > i0 ? "↓" : "↑"
+    elsif i1 > i0
+      action = j1 > j0 ? "↘" : "↙"
+    else
+      action = j1 > j0 ? "↗" : "↖"
+    end
+    action += "成" if type0 && type1 != type0
+    str += action
+    str.html_safe
+  end
+
+  def to_move_ja(board)
     str = @teban ? "▲" : "△"
     for i in 0..3 do
       for j in 0..2 do
