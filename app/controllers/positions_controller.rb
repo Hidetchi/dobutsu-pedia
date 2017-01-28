@@ -28,7 +28,8 @@ class PositionsController < ApplicationController
     str = ""
     for i in 0..3 do
       for j in 0..2 do
-        str += pars["cell_" + i.to_s + j.to_s]
+        tmp = pars["cell_" + i.to_s + j.to_s]
+        str += tmp == "10" ? "a" : tmp
       end
     end
     str += [pars[:hand_KI], pars[:hand_ZO], pars[:hand_HI], pars[:turn]].join
