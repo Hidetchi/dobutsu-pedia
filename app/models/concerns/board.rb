@@ -30,9 +30,24 @@
 
   def loadPosition(position = nil)
     position = Position.find_by(bit_id: normalized_bit) if !position
+    return if !position
     @id = position.id
     @num_end = position.num_end
     @best_id = position.best_id
+  end
+
+  def self.fromString(str)
+    bit = 0
+    for i in 0..11 do
+      bit = bit << 4
+      bit += str[i].hex
+    end
+    for i in 12..14 do
+      bit = bit << 2
+      bit += str[i].hex
+    end
+    teban = str[15] == "0"
+    Board.new(bit, teban)
   end
 
   def normalized_bit

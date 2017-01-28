@@ -111,6 +111,12 @@ div#footer {
 	font-size: 13px;
 }
 
+div.level1 {
+  margin-left:15px;
+  margin-right:10px;
+  margin-bottom:5px;
+}
+
 p.notice {
 	color: blue;
 }
@@ -331,4 +337,8 @@ div#wiki_edit_buttons {
 
 img.star {
 	vertical-align: baseline;
+}
+
+table.search select {
+  height:50px;
 }

@@ -1,0 +1,50 @@
+h2 局面検索
+
+table.invisible
+  tr
+    td.invisible
+      div.board
+        table
+          - for i in 0..3 do
+            tr
+              - for j in 0..2 do
+                td
+                  div id=(i.to_s + j.to_s)
+    td.invisible style="padding-left:30px;vertical-align:middle;"
+      = form_for :search do |f|
+        table.search
+          - for i in 0..3 do
+            tr
+              - for j in 0..2 do
+                td
+                  = f.select id=('cell_' + i.to_s + j.to_s), [["-",0], ["+LI",1], ["-LI",2], ["+KI",3], ["-KI",4], ["+ZO",5], ["-ZO",6], ["+HI",7], ["-HI",8], ["+NI",9], ["-NI",10]]
+        p
+          strong 先手の持ち駒
+          br
+          |+KI 
+          = f.select :hand_KI, [0,1,2]
+          br
+          |+ZO 
+          = f.select :hand_ZO, [0,1,2]
+          br
+          |+HI 
+          = f.select :hand_HI, [0,1,2]
+        p
+          strong 手番 
+          = f.select :turn, [["先手番",0],["後手番",1]]
+        = f.submit "検索"
+
+
+javascript:
+  function updateImage(id, value) {
+    $('div#' + id).html('<img src="/assets/hidetchi/' + value + '.png">');
+  }
+  for (i = 0; i <= 3; i++) { 
+    for (j = 0; j <= 2; j++) { 
+      updateImage(i.toString() + j.toString(), $('select#search_cell_' + i + j).val());
+    }
+  }
+  $('select').on('change', function (e) {
+    var cellID = this.id.split("_")[2];
+    updateImage(cellID, this.value);
+  });
